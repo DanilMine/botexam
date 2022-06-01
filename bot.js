@@ -2245,9 +2245,9 @@ bot.action('page8_0', async (ctx, next) => {
 bot.action('page8_1', async (ctx, next) => {
     console.log(ctx.from)
     await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, varia.message[0])
+	await bot.telegram.sendMessage(ctx.chat.id, varia.message1[0])
     await waitFor(200);
-	await bot.telegram.sendMessage(ctx.chat.id, varia.message[1])
+	await bot.telegram.sendMessage(ctx.chat.id, varia.message1[1])
     await waitFor(200);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Результат:\n\n' + varia.dead[0] + varia.dead[1] + varia.dead[2] + varia.dead[3] + varia.dead[4] + varia.dead[5] + varia.dead[6] + varia.dead[7] + '\n\nВсе Финалы игры\n\n' + varia.end[0] + '\n\n' + varia.end[1] + '\n\n' + varia.end[2] + '\n\nВаша карма:  ' + varia.result )
     await waitFor(200);

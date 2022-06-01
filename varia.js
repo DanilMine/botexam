@@ -7,9 +7,9 @@ let end = [];       //концовки прохождения
  end[2] = '*ПЛОХАЯ КОНЦОВКА*';
 
 let bog = [];       //приговор
-let message = [];   //слова бога
-    message[0] = '...';
-    message[1] = '...';
+let message1 = [];   //слова бога
+    message1[0] = '...';
+    message1[1] = '...';
 let death = 0;      //счетчик смертей
 let result = 0;     //счетчик результат
 
@@ -22,7 +22,7 @@ module.exports.dead = dead;
 module.exports.deadGlobal = deadGlobal;
 module.exports.end = end;
 module.exports.bog = bog;
-module.exports.message = message;
+module.exports.message1 = message1;
 module.exports.death = death;
 module.exports.result = result;
 module.exports.razgovor1 = razgovor1;
