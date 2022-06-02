@@ -23,7 +23,7 @@ function dltMessages(context) { //функція видалення
     const msg_id = context.update.callback_query.message.message_id;
     msgForDelete.push( msg_id);
     for (let i in msgForDelete) {
-         bot.telegram.deleteMessage(id, msgForDelete[i]);
+        bot.telegram.deleteMessage(id, msgForDelete[i]);
     }
 }
 
@@ -50,6 +50,10 @@ bot.command('start', ctx => {
             ]
         }
     })
+})
+
+bot.action('close', async (ctx, next) => { 
+    dltMessages(ctx);
 })
 
 bot.command('menu', ctx => {
@@ -251,11 +255,6 @@ bot.action('death_0', async (ctx, next) => {
     bot.telegram.sendMessage(ctx.chat.id, 'Количество сброшено!').then((result) => {
         msgForDelete.push(result.message_id);
     });
-})
-
-bot.action('close', async (ctx, next) => {
-    msgForDelete.push( ctx.update.callback_query.message.message_id);
-    dltMessages(ctx);
 })
 
 // -----------НАЧАЛО КВЕСТА!-----------
