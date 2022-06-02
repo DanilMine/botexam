@@ -1,3 +1,4 @@
+const Telegraf = require('telegraf').Telegraf
 const varia = require('./varia')
 
 function fordead(){
