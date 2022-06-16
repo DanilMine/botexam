@@ -4,9 +4,7 @@ const varia = require('./varia')
 const func = require('./func')
 const bot = new Telegraf(config.TOKEN);
 
-
 //=================================== ФУНКЦИИ
-
 
 func.fordead() //Концоки
 func.forbog() //решения Бога
@@ -31,13 +29,15 @@ let msgForDelete = [];
 
 bot.command('start', ctx => {
     console.log(ctx.from);
-    ctx.deleteMessage();
+    ctx.deleteMessage();  
     const html = `
 Здравствуй, ${ctx.from.first_name}!
 Для начала давай я тебя ознакомлю с имеющимися коммандами:\n
 <strong>/menu</strong> - меню игры, где вы можете взаимодействовать из функционалом игры, а так же её начать 
 <strong>/help</strong> - подсказки
-<i>Если вы не знаете какое решение прять - пользуйтесь</i>`;
+<i>Если вы не знаете какое решение прять - пользуйтесь</i>
+
+Будьте осторожны ведь количество ваших жизней <strong>ограниченно!</strong> В начале каждой игры вы получаете ровно <strong>3 жизни</strong> и в случае 3 смертей вам прийдеться начинать с <strong>НАЧАЛА!</strong>`;
     bot.telegram.sendMessage(ctx.chat.id, html, {
         parse_mode: "HTML",
         reply_markup: {
@@ -106,7 +106,7 @@ bot.command('help', async (ctx, next) => {
                 ],
             ],
         }
-    }).then((result) =>{msgForDelete.push(result.message_id);});
+    })
 })
 
 
@@ -114,7 +114,7 @@ bot.command('help', async (ctx, next) => {
 // ----------- HELP -----------
 
 bot.action('paragraph_0', async (ctx, next) => {
-    dltMessages(ctx);  
+    dltMessages(ctx);
     msgForDelete = [];
     await waitFor(500);
     await bot.telegram.sendMessage(ctx.chat.id, 'Ответы на вопросы по порядку: 2,3,3', {
@@ -263,7 +263,7 @@ bot.action('prehistory', async (ctx, next) => {
 
 bot.action('game_data', async (ctx, next) => {
     await waitFor(500);
-    bot.telegram.sendMessage(ctx.chat.id, 'Меню игровых данных:\n\n' + 'количество смертей: ' + varia.death,
+    bot.telegram.sendMessage(ctx.chat.id, 'Меню игровых данных:\n\n' + 'количество смертей: ' + varia.death + '\nколичество жизней: ' + varia.life,
     {
         reply_markup: {
             inline_keyboard: [
@@ -272,6 +272,9 @@ bot.action('game_data', async (ctx, next) => {
                 ],
                 [
                     { text: 'Разблокированные концовки', callback_data: 'end_0' },
+                ],
+                [
+                    { text: 'Добавить 1 жизнь', callback_data: 'life_0' },
                 ],
             ]
 }}).then((result) =>{msgForDelete.push(result.message_id);});     })
@@ -286,6 +289,11 @@ bot.action('death_0', async (ctx, next) => {
     bot.telegram.sendMessage(ctx.chat.id, 'Количество сброшено!').then((result) =>{msgForDelete.push(result.message_id);});  
 })
 
+bot.action('life_0', async (ctx, next) => {
+    varia.life = varia.life + 1;
+    bot.telegram.sendMessage(ctx.chat.id, 'Теперь их ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});  
+})
+
 bot.action('close', async (ctx, next) => { 
     dltMessages(ctx);  
     msgForDelete = [];
@@ -297,6 +305,7 @@ bot.action('page0_0', async (ctx, next) => {
     dltMessages(ctx);
     msgForDelete = [];
     varia.result = 0; 
+    varia.life = 3;
     bot.telegram.sendMessage(ctx.chat.id, 'Глава 0: "Сумрачный лес"').then((result) =>{msgForDelete.push(result.message_id);});
 	await waitFor(500);
     bot.telegram.sendPhoto(ctx.chat.id, {
@@ -314,22 +323,37 @@ bot.action('page0_0', async (ctx, next) => {
 })
 
 bot.action('page0_1', async (ctx, next) => {
-    await waitFor(500);
-    bot.telegram.sendMessage(ctx.chat.id,'Вы решили осмотреться и заметили у себя под ногами ✉ странную записку, в ней было написано следующее: \n\n"Здравствуй Сандро, ты оказался тут не просто так, твоя судьба была изменена, ты имеешь право вновь стать тем, кто достоин быть рядом с Господом своим. Долго не задерживайся и быстрее уходи из леса, назад главное не ходи, там… \n- Листок  был оборван на этих словах"\n\nВы не были уверены стоит ли доверять словам из записки, но были уверенны в одном, что нужно делать ноги из этого леса. \n\nПеред вами 3 пути:\n1⃣ Дорога вперед была проложена каменной тропинкой и, возможно, была лучшим вариантом...\n2⃣ Немного правее была другая дорожка, которая была вытоптанная шагами, скорее всего, людей.\n3⃣ И последняя была сзади, дорожка, которая была самой средней из всех, она не была идеальной, но и не так плоха, как другие... \nКуда же стоит пойти? ',{
-        reply_markup: {
-            inline_keyboard: [ //keyboard
-                [
-                    { text: "Каменная дорожка прямо", callback_data: "page0_t_0" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'Вы решили осмотреться и заметили у себя под ногами ✉ странную записку, в ней было написано следующее: \n\n"Здравствуй Сандро, ты оказался тут не просто так, твоя судьба была изменена, ты имеешь право вновь стать тем, кто достоин быть рядом с Господом своим. Долго не задерживайся и быстрее уходи из леса, назад главное не ходи, там… \n- Листок  был оборван на этих словах"\n\nВы не были уверены стоит ли доверять словам из записки, но были уверенны в одном, что нужно делать ноги из этого леса. \n\nПеред вами 3 пути:\n1⃣ Дорога вперед была проложена каменной тропинкой и, возможно, была лучшим вариантом...\n2⃣ Немного правее была другая дорожка, которая была вытоптанная шагами, скорее всего, людей.\n3⃣ И последняя была сзади, дорожка, которая была самой средней из всех, она не была идеальной, но и не так плоха, как другие... \nКуда же стоит пойти? ',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "Каменная дорожка прямо", callback_data: "page0_t_0" },
+                    ],
+                    [
+                        { text: "Тропинка направо", callback_data: "page0_r_0" },
+                    ],
+                    [
+                        { text: "Возможно, все же путь назад?", callback_data: "page0_d_0" },
+                    ],
                 ],
-                [
-                    { text: "Тропинка направо", callback_data: "page0_r_0" },
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);});
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
                 ],
-                [
-                    { text: "Возможно, все же путь назад?", callback_data: "page0_d_0" },
-                ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);});
+            }
+        })
+    }
 })
 
 // -----------ПОЙТИ ПРЯМО!-----------
@@ -471,6 +495,7 @@ bot.action('page0_r_0_1', async (ctx, next) => {
 
 bot.action('page0_r_0_2', async (ctx, next) => {   
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[1] = '💀Концовка №2: "Смерть от желания легкого пути"'
     await waitFor(500);
     await bot.telegram.sendMessage(ctx.chat.id,'Вы стали искать другие возможные записки, но ваши попытки были напрасны, ничего больше, кроме всякого мусора на траве, здесь не было.').then((result) =>{msgForDelete.push(result.message_id);}); 
@@ -483,11 +508,11 @@ bot.action('page0_r_0_2', async (ctx, next) => {
         reply_markup: {
             inline_keyboard: [ 
                 [
-                    { text: "Начать с самого начала", callback_data: "page0_0" },
+                    { text: "Выбрать другой путь", callback_data: "page0_1" },
                 ],
             ],
         }
-    })
+    }).then((result) =>{msgForDelete.push(result.message_id);});
 })
 
 bot.action('page0_r_1', async (ctx, next) => {
@@ -517,6 +542,7 @@ bot.action('page0_r_1', async (ctx, next) => {
 
 bot.action('page0_d_0', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[0] = '💀Концовка №1: "Смерть от неверия"';    
     await waitFor(500);
     await bot.telegram.sendMessage(ctx.chat.id,'Вы проявили свою твердость характера, решив, что стоит пойти назад. Дорожка не была идеальной, но вы не собирались играть в эти игры...').then((result) =>{msgForDelete.push(result.message_id);});
@@ -541,11 +567,11 @@ bot.action('page0_d_0', async (ctx, next) => {
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: "Начать с самого начала", callback_data: "page0_0" },
+                    { text: "Вернуться к выбору", callback_data: "page0_1" },
                 ],
             ],
         }
-    })
+    }).then((result) =>{msgForDelete.push(result.message_id);}); 
 })
 
 // -----------ПОЙТИ НАЗАД! (END)-----------
@@ -633,23 +659,38 @@ bot.hears(regex, async (ctx, next) => {
 })
 
 bot.action('page0_4', async (ctx, next) => { 
-    await waitFor(500);
-    bot.telegram.sendPhoto(ctx.chat.id, {
-        source: "photos/f_dead.jpg"
-    }).then((result) =>{msgForDelete.push(result.message_id);}); 
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id,'-Здравствуй, молодец... У тебя много вопросов, но ответы на них ты получишь только внутри. Сейчас ты должен знать только одно. Тебя выбрал Бог дабы дать тебе 2 шанс. Твоя праведная жизнь разозлила чертей, и они возжелали испортить тебе её, чтобы ты вернулся к тем, кто тебе помог выжить... Хах... В общем, я должен проверить достин ли ты попасть внутрь. Готов ли ты ответить на мои вопросы?',{
-        reply_markup: {
-            inline_keyboard: [ 
-                [
-                    { text: "Готов...", callback_data: "page0_5_1" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/f_dead.jpg"
+        }).then((result) =>{msgForDelete.push(result.message_id);}); 
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id,'-Здравствуй, молодец... У тебя много вопросов, но ответы на них ты получишь только внутри. Сейчас ты должен знать только одно. Тебя выбрал Бог дабы дать тебе 2 шанс. Твоя праведная жизнь разозлила чертей, и они возжелали испортить тебе её, чтобы ты вернулся к тем, кто тебе помог выжить... Хах... В общем, я должен проверить достин ли ты попасть внутрь. Готов ли ты ответить на мои вопросы?',{
+            reply_markup: {
+                inline_keyboard: [ 
+                    [
+                        { text: "Готов...", callback_data: "page0_5_1" },
+                    ],
+                    [
+                        { text: "К слову, я не тот, о ком вы подумали..", callback_data: "page0_5_5" },
+                    ],
                 ],
-                [
-                    { text: "К слову, я не тот, о ком вы подумали..", callback_data: "page0_5_5" },
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);});
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
                 ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);});
+            }
+        })
+    }
 })
 
 bot.hears('Сандро', async (ctx, next) => {
@@ -710,6 +751,7 @@ bot.action('page0_5_1', async (ctx, next) => {
 
 bot.action('page0_5_1_f1', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[2] = '💀Концовка №3: "Смерть от незнания"'
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id,'Возможно, этот вопрос сложноват, но твой ответ не верный. Воплощение Истины в жизни - это Любовь!').then((result) =>{msgForDelete.push(result.message_id);}); 
@@ -727,6 +769,7 @@ bot.action('page0_5_1_f1', async (ctx, next) => {
 
 bot.action('page0_5_1_f2', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[2] = '💀Концовка №3: "Смерть от незнания"'
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id,'Возможно, этот вопрос сложноват, но твой ответ не верный. Желание, устремленность к Истине - это Жизнь!').then((result) =>{msgForDelete.push(result.message_id);}); 
@@ -762,6 +805,7 @@ bot.action('page0_5_2', async (ctx, next) => {
 
 bot.action('page0_5_2_f', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[2] = '💀Концовка №3: "Смерть от незнания"';    
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id,'Сандро, ты живешь по этим заповедям, не зная их? Проваливай отсюда!').then((result) =>{msgForDelete.push(result.message_id);});
@@ -794,6 +838,7 @@ bot.action('page0_5_3', async (ctx, next) => {
 
 bot.action('page0_5_3_f', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[2] = '💀Концовка №3: "Смерть от незнания"';
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id,'Такой вопрос учат в учебниках истории, а ты не смог на него ответить, мне жаль, но другого выбора нет!').then((result) =>{msgForDelete.push(result.message_id);});
@@ -836,28 +881,43 @@ bot.action('page0_5_5', async (ctx, next) => {
 // -----------ГЛАВА1: "ЛИМБ"-----------
 
 bot.action('page1_0', async (ctx, next) => {
-    dltMessages(ctx);
-    msgForDelete = [];
-    await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id,'Глава 1: "Лимб"').then((result) =>{msgForDelete.push(result.message_id);});
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id,'Зайдя за ворота, перед вами будто был другой мир. Со стороны и не скажешь, но внутри повсюду были скалы и реки. Люди плакали и горевали. Какие были их мотивы горечи, вы не знали, но было ясно, что это их наказание... Если вам до этого момента еще казалось, что это все какая-то шутка, то теперь такие мысли стали пропадать.').then((result) =>{msgForDelete.push(result.message_id);}); 
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id,'Вы прошли немного дальше и стали замечать все больше и больше мучеников...').then((result) =>{msgForDelete.push(result.message_id);}); 
-    await waitFor(500);
-    bot.telegram.sendPhoto(ctx.chat.id, {
-        source: "photos/1_door.jpg"
-    }).then((result) =>{msgForDelete.push(result.message_id);}); 
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id,'Продолжая идти все дальше, вы заметили в дали мужчину стоящего на лодке, он единственный был, кто не плакал и мужественно смотрел на остальных.',{
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "Подойти к нему", callback_data: "page1_1" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        dltMessages(ctx);
+        msgForDelete = [];
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id,'Глава 1: "Лимб"').then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+	    await bot.telegram.sendMessage(ctx.chat.id,'Зайдя за ворота, перед вами будто был другой мир. Со стороны и не скажешь, но внутри повсюду были скалы и реки. Люди плакали и  горевали. Какие были их мотивы горечи, вы не знали, но было ясно, что это их наказание... Если вам до этого момента еще казалось, что это все какая-то шутка, то теперь такие    мысли стали пропадать.').then((result) =>{msgForDelete.push(result.message_id);}); 
+        await waitFor(500);
+	    await bot.telegram.sendMessage(ctx.chat.id,'Вы прошли немного дальше и стали замечать все больше и больше мучеников...').then((result) =>{msgForDelete.push(result.message_id);}); 
+        await waitFor(500);
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/1_door.jpg"
+        }).then((result) =>{msgForDelete.push(result.message_id);}); 
+        await waitFor(500);
+	    await bot.telegram.sendMessage(ctx.chat.id,'Продолжая идти все дальше, вы заметили в дали мужчину стоящего на лодке, он единственный был, кто не плакал и мужественно смотрел на    остальных.',{
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "Подойти к нему", callback_data: "page1_1" },
+                    ],
                 ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);}); 
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);}); 
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
+                ],
+            }
+        })
+    }
 })
 
 bot.action('page1_1', async (ctx, next) => {
@@ -875,6 +935,7 @@ bot.action('page1_1', async (ctx, next) => {
 
 bot.hears('Моё имя Александр', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1; 
     varia.dead[3] = '💀Концовка №4: "Вечные муки в Лимбе"';  
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id,'Он посмотрел на вас повнимательнее:\n- Александр значит?').then((result) =>{msgForDelete.push(result.message_id);});  
@@ -890,9 +951,6 @@ bot.hears('Моё имя Александр', async (ctx, next) => {
             inline_keyboard: [
                 [
                     { text: "Вернуться к входу", callback_data: "page1_0" },
-                ],
-                [
-                    { text: "Вернуться в самое начало", callback_data: "page0_0" },
                 ],
             ],
         }
@@ -1124,31 +1182,46 @@ bot.action('page1_7', async (ctx, next) => {
 // ----------- ГЛАВА2: "ТЕ, КТО ЛЮБИЛИ..." -----------
 
 bot.action('page2_0', async (ctx, next) => {
-    dltMessages(ctx);
-    msgForDelete = [];
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Глава 2:  "Те, кто любили..."').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя на следующий круг, атмосфера покоя была полностью утерена. Теперь все ниже и ниже наказания были хуже и хуже. Тут повсюду бушевали торнадо... ').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Пройдя далее, вы заметили, что в этих торнадо были люди... Т.е. это были их наказания..? Вам казалось это странным, но люди в них носились то вправо, то влево. Никто из них не оставался на земле - все они взлетали...').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-    bot.telegram.sendPhoto(ctx.chat.id, {
-        source: "photos/2_minos.jpg"
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
-	await bot.telegram.sendMessage(ctx.chat.id, 'Вы обнаружили огромного мужчину с копьём в руках... Вы сразу приняли решение, что он и есть Страж этого уровня. Подойдя к нему, он взглянул на вас и, не сказав ни слова, направил руку в левую сторону. Там была какая-то дорожка, которая, возможно, вела дальше...',
-     {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "Извините...", callback_data: "page2_1_1" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        dltMessages(ctx);
+        msgForDelete = [];
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Глава 2:  "Те, кто любили..."').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя на следующий круг, атмосфера покоя была полностью утерена. Теперь все ниже и ниже наказания были хуже и хуже. Тут повсюду бушевали торнадо... ').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Пройдя далее, вы заметили, что в этих торнадо были люди... Т.е. это были их наказания..? Вам казалось это странным, но люди в них носились то вправо, то влево. Никто из них не оставался на земле - все они взлетали...').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/2_minos.jpg"
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+        await bot.telegram.sendMessage(ctx.chat.id, 'Вы обнаружили огромного мужчину с копьём в руках... Вы сразу приняли решение, что он и есть Страж этого уровня. Подойдя к нему, он взглянул на вас и, не сказав ни слова, направил руку в левую сторону. Там была какая-то дорожка, которая, возможно, вела дальше...',
+         {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "Извините...", callback_data: "page2_1_1" },
+                    ],
+                    [
+                        { text: "Идём по дорожке", callback_data: "page2_1" },
+                    ],
                 ],
-                [
-                    { text: "Идём по дорожке", callback_data: "page2_1" },
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
                 ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
+            }
+        })
+    }
 })
 
 
@@ -1171,6 +1244,7 @@ bot.action('page2_1_1', async (ctx, next) => {
 
 bot.action('page2_1_2', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[4] = '💀Концовка №5: "Смерть из-за любопытства"';
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, '- Моё имя Минос, и ты, Сандро, надоел мне. Ты получил информацию куда идти, но твоё любопытство привело тебя к погибели, так что получи своё наказание!\nМинос проткнул вас своим копьём насквозь.' + varia.deadGlobal + varia.dead[4],
@@ -1258,8 +1332,7 @@ bot.action('page2_2_1', async (ctx, next) => {
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, '...').then((result) =>{msgForDelete.push(result.message_id);});    
     await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Когда вы решили уходить, вы спросили, знает ли она краткий путь через эту бурю, на что она ответила, что можно пройти это все через скалы на окраине. Там есть мост, которым пользуется Страж, но, возможно, он будет не против...\n- Стойте, не хотите ли вы получить нечто больше, чем этот совет... например, меня...'
-    ,
+	await bot.telegram.sendMessage(ctx.chat.id, 'Когда вы решили уходить, вы спросили, знает ли она краткий путь через эту бурю, на что она ответила, что можно пройти это все через скалы на окраине. Там есть мост, которым пользуется Страж, но, возможно, он будет не против...\n- Стойте, не хотите ли вы получить нечто больше, чем этот совет... например, меня...',
      {
         reply_markup: {
             inline_keyboard: [
@@ -1357,32 +1430,47 @@ bot.action('page2_2_5', async (ctx, next) => {
 
 
 bot.action('page2_2', async (ctx, next) => {
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя в лабиринт, вам стало понятно, что тут вам поможет только удача. Обзор был очень мал, и, скорее всего, вам тут поможет только ваша внимательность.').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, '...').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Вокруг были торнадо, но они вас не трогали... Может это и не так опасно, думали вы...').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-    bot.telegram.sendPhoto(ctx.chat.id, {
-        source: "photos/2_1.jpg"
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
-	await bot.telegram.sendMessage(ctx.chat.id, 'Вы дошли до первого пересечения. Ваш выбор:',
-     {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "Налево", callback_data: "page2_3" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя в лабиринт, вам стало понятно, что тут вам поможет только удача. Обзор был очень мал, и, скорее всего, вам тут поможет только ваша внимательность.').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, '...').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Вокруг были торнадо, но они вас не трогали... Может это и не так опасно, думали вы...').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/2_1.jpg"
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+        await bot.telegram.sendMessage(ctx.chat.id, 'Вы дошли до первого пересечения. Ваш выбор:',
+         {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "Налево", callback_data: "page2_3" },
+                    ],
+                    [
+                        { text: "Направо", callback_data: "page2_labl" },
+                    ],
+                    [
+                        { text: "Прямо", callback_data: "page2_labl" },
+                    ],
                 ],
-                [
-                    { text: "Направо", callback_data: "page2_labl" },
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
                 ],
-                [
-                    { text: "Прямо", callback_data: "page2_labl" },
-                ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
+            }
+        })
+    }
 })
 
 bot.action('page2_labl', async (ctx, next) => {
@@ -1419,6 +1507,7 @@ bot.action('page2_labl', async (ctx, next) => {
 
 bot.action('page2_end', async (ctx, next) => {
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     varia.dead[5] = '💀Концовка №6: "Смерть от падения"';
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы шли по тропинке, как тут же земля под ногами просто пропала. Верно, вы оказались не возле обрыва, а прямо в нём. Вы падали вниз...').then((result) =>{msgForDelete.push(result.message_id);});    
@@ -1637,32 +1726,48 @@ bot.action('page3_0', async (ctx, next) => {
 })
 
 bot.action('page3_1', async (ctx, next) => {
-    await waitFor(500);
-    bot.telegram.sendPhoto(ctx.chat.id, {
-        source: "photos/3_2.jpg"
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Вы побежали максимально далеко от Цербера, но его нюх не дал вам расслабиться... Он почувствовал вас, когда вы прошли мимо него, но когда он понял, что вы решили сбежать, то побежал за вами...').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Скорость его бега была однозначно выше, так что вам нужно было двигаться быстрее. Вы двигались по безопасной дорожке, но нужно было срезать путь, так что вам оставалось 2 выбора, срезать через скалы или пробежать через мучеников.\n- Вергилий, куда побежим?\n- Я не могу сказать, что лучше... Давай лучше ты примешь решение.').then((result) =>{msgForDelete.push(result.message_id);});    
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, '- Что-о? *У него паника...* Ладно, ничего не поделаешь, идём через...',{
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "Скалы", callback_data: "page3_2" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/3_2.jpg"
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Вы побежали максимально далеко от Цербера, но его нюх не дал вам расслабиться... Он почувствовал вас, когда вы прошли мимо него, но когда он понял, что вы решили сбежать, то побежал за вами...').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Скорость его бега была однозначно выше, так что вам нужно было двигаться быстрее. Вы двигались по безопасной дорожке, но нужно было срезать путь, так что вам оставалось 2 выбора, срезать через скалы или пробежать через мучеников.\n- Вергилий, куда побежим?\n- Я не могу сказать, что лучше... Давай лучше ты примешь решение.').then((result) =>{msgForDelete.push(result.message_id);});    
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, '- Что-о? *У него паника...* Ладно, ничего не поделаешь, идём через...',{
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "Скалы", callback_data: "page3_2" },
+                    ],
+                    [
+                        { text: "Людей", callback_data: "page3_2_2" },
+                    ],
                 ],
-                [
-                    { text: "Людей", callback_data: "page3_2_2" },
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
                 ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
+            }
+        })
+    }
 })
 
 bot.action('page3_2_2', async (ctx, next) => {
     varia.dead[6] = '💀Концовка №7: "Смерть в зубах Цербера"'
     varia.death = varia.death + 1;
+    varia.life = varia.life - 1;
     await waitFor(500);
     bot.telegram.sendPhoto(ctx.chat.id, {
         source: "photos/3_dead.jpg"
@@ -1918,36 +2023,53 @@ bot.action('page5_7', async (ctx, next) => {
 //------------------------ГЛАВА 5
 
 bot.action('page6_0', async (ctx, next) => {
-    dltMessages(ctx);
-    msgForDelete = [];   
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Глава 5: "Встреча с Медузой"').then((result) =>{msgForDelete.push(result.message_id);});     
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя в следущий круг, вы оказалия недалеко от какого-то города.\n- Нам нужно именно в него.\n- Вполне логично - Согласился Сандро.').then((result) =>{msgForDelete.push(result.message_id);});     
-    await waitFor(500);
-    bot.telegram.sendPhoto(ctx.chat.id, {
-        source: "photos/6_0.jpg"
-    }).then((result) =>{msgForDelete.push(result.message_id);});     
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя внутрь вы увидели разрушенный город... Повсюду были черти и мифические твари. Странное место, подумали вы...').then((result) =>{msgForDelete.push(result.message_id);});     
-    await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Вы зашли в бар чтобы встретить кое кого там. Ваша задача, по словам Вергилия, была ответить на еще пару вопросов от Медузы. Так званной королевы этого города... Немного подождав, пока Вергилий договориться с главой заведения, они пошли в особенную комнату. Тут вы встретили Медузу...',
-     {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: "Приветствую, ваше величество я...", callback_data: "page6_1_1" },
+    if (varia.life === 3 || varia.life === 2 || varia.life === 1){
+        dltMessages(ctx);
+        msgForDelete = [];   
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id, 'Количество жизней: ' + varia.life).then((result) =>{msgForDelete.push(result.message_id);});
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Глава 5: "Встреча с Медузой"').then((result) =>{msgForDelete.push(result.message_id);});     
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя в следущий круг, вы оказалия недалеко от какого-то города.\n- Нам нужно именно в него.\n- Вполне логично - Согласился Сандро.').then((result) =>{msgForDelete.push(result.message_id);});     
+        await waitFor(500);
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/6_0.jpg"
+        }).then((result) =>{msgForDelete.push(result.message_id);});     
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Зайдя внутрь вы увидели разрушенный город... Повсюду были черти и мифические твари. Странное место, подумали вы...').then((result) =>{msgForDelete.push(result.message_id);});     
+        await waitFor(500);
+        await bot.telegram.sendMessage(ctx.chat.id, 'Вы зашли в бар чтобы встретить кое кого там. Ваша задача, по словам Вергилия, была ответить на еще пару вопросов от Медузы. Так званной королевы этого города... Немного подождав, пока Вергилий договориться с главой заведения, они пошли в особенную комнату. Тут вы встретили Медузу...',
+         {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "Приветствую, ваше величество я...", callback_data: "page6_1_1" },
+                    ],
+                    [
+                        { text: "Поклониться в знак приветствия", callback_data: "page6_1" },
+                    ],
                 ],
-                [
-                    { text: "Поклониться в знак приветствия", callback_data: "page6_1" },
+            }
+        }).then((result) =>{msgForDelete.push(result.message_id);});    
+    }else{
+        await waitFor(500);
+        bot.telegram.sendMessage(ctx.chat.id,'О нет ваши жизни закончились!\nКак бы не было грустно, но нужно начинать сначала(',{
+            reply_markup: {
+                inline_keyboard: [ //keyboard
+                    [
+                        { text: "В начало", callback_data: "page0_0" },
+                    ],
                 ],
-            ],
-        }
-    }).then((result) =>{msgForDelete.push(result.message_id);});    
+            }
+        })
+    }
 })
 
 bot.action('page6_1_1', async (ctx, next) => {
     await waitFor(500);
+    varia.life = varia.life - 1;
+    varia.death = varia.death + 1;
     bot.telegram.sendPhoto(ctx.chat.id, {
         source: "photos/6_2.jpg"
     }).then((result) =>{msgForDelete.push(result.message_id);});     
@@ -1959,9 +2081,6 @@ bot.action('page6_1_1', async (ctx, next) => {
             inline_keyboard: [
                 [
                     { text: "В начало круга", callback_data: "page6_0" },
-                ],
-                [
-                    { text: "Начать с самого начала", callback_data: "page0_0" },
                 ],
             ],
         }
@@ -2083,7 +2202,11 @@ bot.action('page7_0', async (ctx, next) => {
     dltMessages(ctx);
     msgForDelete = [];   
     await waitFor(500);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Глава 6: "Вопрос Дружбы"').then((result) =>{msgForDelete.push(result.message_id);});     
+	await bot.telegram.sendMessage(ctx.chat.id, 'Глава 6: "Вопрос Дружбы"').then((result) =>{msgForDelete.push(result.message_id);});  
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_0.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});       
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы оказались в темном холодном месте. Вокруг был лёд... Немного пройдя вперед, вы глянули вниз, а там обнаружили ледяное озеро. Внизу были люди, которые кричали от боли. Их наказание заключалось в вечном прибывании под льдом...').then((result) =>{msgForDelete.push(result.message_id);});     
     await waitFor(500);
@@ -2101,6 +2224,10 @@ bot.action('page7_0', async (ctx, next) => {
 
 bot.action('page7_1', async (ctx, next) => {
     await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_1.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
+    await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, '- И какой у нас план Вергилий?\n- Ты должен позволить мне пойти первому...\n- ЧТО?! С чего бы это?\n- Я только ради этого и побежал за тобой... Понимаешь ли... Если я не покину это место сегодня, то возможно я не смогу больше это сделать никогда...\n- Ты хочешь сказать, что мне решать, кто будет идти первым... Ясно... Значит выбор на мне...',
      {
         reply_markup: {
@@ -2114,6 +2241,10 @@ bot.action('page7_1', async (ctx, next) => {
 })
 
 bot.action('page7_2', async (ctx, next) => {
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_2.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Когда вы дошли до Ворот по Вергилию было Видно, что он очень сильно нервничал... Вы подошли до стража. Он посмотрел на вас и сказал:\n- Один из вас может пройти. Второй будет ждать своего времени. Решай Сандро, выбор на тебе.',
      {
@@ -2131,6 +2262,10 @@ bot.action('page7_2', async (ctx, next) => {
 })
 
 bot.action('page7_3', async (ctx, next) => {
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_3.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Когда Вергилий услышал, что вы идёте первым, то его лицо осознало безвыходность... Он ничего не мог поделать, так что Ворота открылись, можно было уходить.',
      {
@@ -2168,6 +2303,10 @@ bot.action('page7_5_0', async (ctx, next) => {
     varia.result = varia.result - 1;
     varia.bog[4]='- Последнее, пятое испытание. Должно было проверить твою веру в дружбу...  Жаль, но ты не выслушал Вергилия, а ведь он просил тебя. это был его единственный шанс, чтобы выжить...';
     await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_4_2.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
+    await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы даше не глянули в сторону Вергилия. Как только врата открылись вы вошли в них. Вы имели только одно желание - покинуть ад.',
      {
         reply_markup: {
@@ -2183,6 +2322,10 @@ bot.action('page7_5_0', async (ctx, next) => {
 bot.action('page7_5_1', async (ctx, next) => {
     varia.bog[4]='- Последнее, пятое испытание. Должно было проверить твою веру в дружбу... Жаль, но ты не выслушал Вергилия, а ведь он просил тебя. это был его единственный шанс, чтобы выжить...';
     varia.result = varia.result - 1;
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_4_2.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы попращались с Вергилием. Кто знает, что с ним будет, но почему-то вы были уверенны, что все будет нормально... Может это так, а может нет. В любом случае вы пошли дальше и на этом ваше прибывание в аду закончилось.',
      {
@@ -2200,12 +2343,20 @@ bot.action('page7_5_2', async (ctx, next) => {
     varia.result = varia.result + 1;
     varia.bog[4]='- Последнее, пятое испытание. Должно было проверить твою веру в дружбу... Ты спас Вергилия. Ты обрек себя на тяжелые муки спася одну душу. Ты понимал, что выживешь, но все же это благородно.';
     await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_4_1_1.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
+    await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы решили пропустить Вергилия первым. Это благородный поступок за который вы решили расплотиться муками в холодном льду. Страж превратил вас в одного из мучеников и кинул вас в воду. Почти сразу вы заледенели и вам пришлось терпеть невыносимую боль целую неделю...').then((result) =>{msgForDelete.push(result.message_id);});    
     await bot.telegram.sendMessage(ctx.chat.id, '...').then((result) =>{msgForDelete.push(result.message_id);});     
     await waitFor(200);
     await bot.telegram.sendMessage(ctx.chat.id, '...').then((result) =>{msgForDelete.push(result.message_id);});     
     await waitFor(200);
     await bot.telegram.sendMessage(ctx.chat.id, '...').then((result) =>{msgForDelete.push(result.message_id);});     
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_4_2.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
     await waitFor(200);
     await bot.telegram.sendMessage(ctx.chat.id, 'Как только время прошло. Вы смогли покинуть это ужасное место. Хоть возможно с некой злобой на Вергилия...',
      {
@@ -2222,6 +2373,10 @@ bot.action('page7_5_2', async (ctx, next) => {
 bot.action('page7_5', async (ctx, next) => {
     varia.bog[4]='- Последнее, пятое испытание. Должно было проверить твою веру в дружбу... Ты поступил достаточно интересно. Ты спас Вергилия и сам там не остался. Ворота охраня демон, так что я не буду тебя венить в чем либо. Скажем так, ты сделал правильно).';
     varia.result = varia.result + 1;
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/7_4_1.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы решили попробовать спасти его. Так как Страж отвернулся вы взяли его за руку и быстро побежали к воротам. Ни Вергилий, ни Страж такого не ожидали. Поздравляем вы обманули Стража. Вы думаете за это будете наказаны? Кто знает, но вы помогли другу.',
      {
@@ -2241,6 +2396,10 @@ bot.action('page8_0', async (ctx, next) => {
     dltMessages(ctx);
     msgForDelete = [];    
     func.showMessage();
+    await waitFor(500);
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/8_0.jpg"
+    }).then((result) =>{msgForDelete.push(result.message_id);});  
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, 'Вы шли по коридору пока не услышали голос:\n-Сандро, ты прибыл.\nВы не ожидали, что он лично решит судить вас... Бог появился перед вами.\n- Я буду судить тебя! Достоин ли ты снова быть под моей защитой? Сейчас ты узнаешь.\nВы были так испуганы, что не могли сказать даже слова... Это был шок для вас...').then((result) =>{msgForDelete.push(result.message_id);});     
     await waitFor(200);
@@ -2264,14 +2423,28 @@ bot.action('page8_0', async (ctx, next) => {
 })
 
 bot.action('page8_1', async (ctx, next) => {
+    bot.telegram.sendPhoto(ctx.chat.id, {
+        source: "photos/8_1.jpg"    
+    }).then((result) =>{msgForDelete.push(result.message_id);}); 
     await waitFor(500);
 	await bot.telegram.sendMessage(ctx.chat.id, varia.message1[0]).then((result) =>{msgForDelete.push(result.message_id);});     
     await waitFor(200);
-	await bot.telegram.sendMessage(ctx.chat.id, varia.message1[1]).then((result) =>{msgForDelete.push(result.message_id);});     
+    if (varia.result >= 2) {
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/8_2.jpg"    
+        }).then((result) =>{msgForDelete.push(result.message_id);}); 
+    }else if (varia.result = 0, 1) {
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/8_3.jpg"    
+        }).then((result) =>{msgForDelete.push(result.message_id);}); 
+    } else {
+        bot.telegram.sendPhoto(ctx.chat.id, {
+            source: "photos/8_4.jpg"    
+        }).then((result) =>{msgForDelete.push(result.message_id);}); 
+    }
+	await bot.telegram.sendMessage(ctx.chat.id, varia.message1[1]).then((result) =>{msgForDelete.push(result.message_id);});         
     await waitFor(200);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Результат:\n\n' + varia.dead[0] + varia.dead[1] + varia.dead[2] + varia.dead[3] + varia.dead[4] + varia.dead[5] + varia.dead[6] + varia.dead[7] + '\n\nВсе Финалы игры\n\n' + varia.end[0] + '\n\n' + varia.end[1] + '\n\n' + varia.end[2] + '\n\nВаша карма:  ' + varia.result ).then((result) =>{msgForDelete.push(result.message_id);});     
-    await waitFor(200);
-	await bot.telegram.sendMessage(ctx.chat.id, 'Спасибо за прохождение.',{
+	await bot.telegram.sendMessage(ctx.chat.id, 'Спасибо за прохождение.\nРезультаты ваших прохождений вы можете глянуть в меню "статистика"!',{
         reply_markup: {
             inline_keyboard: [
                 [

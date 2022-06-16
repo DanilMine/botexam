@@ -17,6 +17,7 @@ let razgovor1 = '';     //Диалоги с мальчиком
 let razgovor1_2 = '';
 let razgovor1_3 = 'e';
 
+let life = 3;
 
 module.exports.dead = dead;
 module.exports.deadGlobal = deadGlobal;
@@ -28,3 +29,4 @@ module.exports.result = result;
 module.exports.razgovor1 = razgovor1;
 module.exports.razgovor1_2 = razgovor1_2;
 module.exports.razgovor1_3 = razgovor1_3;
+module.exports.life = life;
