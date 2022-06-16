@@ -78,8 +78,7 @@ bot.command('menu', ctx => {
 
 bot.command('help', async (ctx, next) => {
     console.log(ctx.from)
-    await waitFor(500);
-    ctx.deleteMessage();       
+    await waitFor(500);    
     bot.telegram.sendMessage(ctx.chat.id, 'Панелька подсказок. Выберите главу, в которой у вас возникли трудности.', {
         reply_markup: {
             inline_keyboard: [
@@ -106,7 +105,7 @@ bot.command('help', async (ctx, next) => {
                 ],
             ],
         }
-    })
+    }).then((result) =>{msgForDelete.push(result.message_id);}); 
 })
 
 
@@ -114,101 +113,38 @@ bot.command('help', async (ctx, next) => {
 // ----------- HELP -----------
 
 bot.action('paragraph_0', async (ctx, next) => {
-    dltMessages(ctx);
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Ответы на вопросы по порядку: 2,3,3', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
-    })
+    await bot.telegram.sendMessage(ctx.chat.id, 'Ответы на вопросы по порядку: 2,3,3').then((result) =>{msgForDelete.push(result.message_id);}); 
+})
 
 bot.action('paragraph_1', async (ctx, next) => {
-    dltMessages(ctx);  
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Для получения бала ребёнка брать не нужно.', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
+    await bot.telegram.sendMessage(ctx.chat.id, 'Для получения бала ребёнка брать не нужно.').then((result) =>{msgForDelete.push(result.message_id);}); 
     })
 
 bot.action('paragraph_2', async (ctx, next) => {  
-    dltMessages(ctx);  
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Помогите женщине, но не соглашайтесь брать от неё награду.', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
+    await bot.telegram.sendMessage(ctx.chat.id, 'Помогите женщине, но не соглашайтесь брать от неё награду.').then((result) =>{msgForDelete.push(result.message_id);}); 
     })
 
 bot.action('paragraph_3', async (ctx, next) => {
-    dltMessages(ctx);  
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Бегите по скалам.', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
+    await bot.telegram.sendMessage(ctx.chat.id, 'Бегите по скалам.').then((result) =>{msgForDelete.push(result.message_id);}); 
     })
 
 bot.action('paragraph_4', async (ctx, next) => {
-    dltMessages(ctx);  
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Не плывите по течению и будьте вежливыми с голосом.', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
+    await bot.telegram.sendMessage(ctx.chat.id, 'Не плывите по течению и будьте вежливыми с голосом.').then((result) =>{msgForDelete.push(result.message_id);}); 
     })
 
 bot.action('paragraph_5', async (ctx, next) => {
-    dltMessages(ctx);  
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Ответы на вопросы по порядку: 2,3,2', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
+    await bot.telegram.sendMessage(ctx.chat.id, 'Ответы на вопросы по порядку: 2,3,2').then((result) =>{msgForDelete.push(result.message_id);}); 
     })
 
 bot.action('paragraph_6', async (ctx, next) => {
-    dltMessages(ctx);  
-    msgForDelete = [];
     await waitFor(500);
-    await bot.telegram.sendMessage(ctx.chat.id, 'Пропустите Вергилия ИЛИ сразу пойдите первыми, а потом выберите вариант "А может...".', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    { text: 'закрыть', callback_data: 'close' },
-                ], 
-            ]
-        }})
+    await bot.telegram.sendMessage(ctx.chat.id, 'Пропустите Вергилия ИЛИ сразу пойдите первыми, а потом выберите вариант "А может...".').then((result) =>{msgForDelete.push(result.message_id);}); 
     })
 
 // ----------- HELP (END) -----------
@@ -281,7 +217,7 @@ bot.action('game_data', async (ctx, next) => {
 
 bot.action('end_0', async (ctx, next) => {
     varia.death = 0;
-    bot.telegram.sendMessage(ctx.chat.id, 'Все возможные смерти которые вы видели:\n\n' + varia.dead[0] + varia.dead[1] + varia.dead[2] + varia.dead[3] + varia.dead[4] + varia.dead[5] + varia.dead[6] + varia.dead[7] + '\n\nВсе Финалы игры\n\n' + varia.end[0] + '\n\n' + varia.end[1] + '\n\n' + varia.end[2] ).then((result) =>{msgForDelete.push(result.message_id);});
+    bot.telegram.sendMessage(ctx.chat.id, `Все возможные смерти которые вы видели:\n\n${varia.dead[0]}\n\n${varia.dead[1]}\n\n${varia.dead[2]}\n\n${varia.dead[3]}\n\n${varia.dead[4]}\n\n${varia.dead[5]}\n\n${varia.dead[6]}\n\n${varia.dead[7]}\n\nВсе Финалы игры\n\n${varia.end[0]}\n\n${varia.end[1]}\n\n${varia.end[2]}`).then((result) =>{msgForDelete.push(result.message_id);});
 })
 
 bot.action('death_0', async (ctx, next) => {

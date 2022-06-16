@@ -3,7 +3,7 @@ const varia = require('./varia')
 
 function fordead(){
     for(i = 0; i <= 6; i++){
-        varia.dead[i] = '*НЕДОСТУПНО*\n\n';
+        varia.dead[i] = '*НЕДОСТУПНО*';
     };
      varia.dead[7] = '*НЕДОСТУПНО*';
 };
