@@ -77,7 +77,8 @@ bot.command('menu', ctx => {
 })
 
 bot.command('help', async (ctx, next) => {
-    console.log(ctx.from)
+    console.log(ctx.from);
+    ctx.deleteMessage();      
     await waitFor(500);    
     bot.telegram.sendMessage(ctx.chat.id, 'Панелька подсказок. Выберите главу, в которой у вас возникли трудности.', {
         reply_markup: {
